@@ -101,7 +101,8 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
       "shardsrv" => false,  #type == "shard", dito.
       "enable_rest" => params[:enable_rest]
     )
-    notifies :restart, "service[#{name}]"
+
+    notifies :restart, resources(:service => name)
   end
   
   # log dir [make sure it exists]
@@ -132,7 +133,7 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     owner "root"
     mode "0755"
     variables :provides => name
-    notifies :restart, "service[#{name}]"
+    notifies :restart, resources(:service => name)
   end
   
   # service
@@ -141,10 +142,10 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     action service_action
     notifies service_notifies
     if !replicaset_name.nil?
-      notifies :create, "ruby_block[config_replicaset]"
+      notifies :create, resources(:ruby_block => "config_replicaset]")
     end
     if type == "mongos"
-      notifies :create, "ruby_block[config_sharding]", :immediately
+      notifies :create, resources(:ruby_block=>"config_sharding"), :immediately
     end
     if name == "mongodb"
       # we don't care about a running mongodb service in these cases, all we need is stopping it
